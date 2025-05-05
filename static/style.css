@@ -1,0 +1,26 @@
+#game-container {
+    position: relative;
+    width: 512px;
+    height: 512px;
+  }
+  
+  #board-img {
+    width: 100%;
+    height: auto;
+    max-width: 512px;  /* Ensuring image is constrained to the board size */
+  }
+  
+  
+  
+  .player {
+    width: 30px;
+    height: 30px;
+    background-color: red;
+    border-radius: 50%;
+    position: absolute;
+    transition: all 0.4s ease;
+    z-index: 10;
+  }
+  
+  
+  
