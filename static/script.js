@@ -1,44 +1,43 @@
-let position = 1;
-let player = document.getElementById("player");
-let board = document.getElementById("board");
-let status = document.getElementById("status");
+const player = document.getElementById("player");
 const modal = document.getElementById("questionModal");
 const questionText = document.getElementById("questionText");
+const status = document.getElementById("status");
 
-// Draw board squares
-for (let i = 100; i > 0; i--) {
-  let cell = document.createElement("div");
-  cell.textContent = i;
-  board.appendChild(cell);
-}
+let position = 1;
 
-// Convert board position to screen (x, y) coordinates
 function getXY(pos) {
-  const cellSize = 51.2; // Each square size
-  const boardSize = 512;
-
+  const cellSize = 51.2;  // Size of each square
+  const boardSize = 512;  // Board size
+  
   let row = Math.floor((pos - 1) / 10);
   let col = (pos - 1) % 10;
 
-  // Zigzag layout
+  // Handle zigzag direction for the Snake and Ladder board
   if (row % 2 === 1) {
     col = 9 - col;
   }
 
+  // Calculate x and y position based on cell size and row/column
   let x = col * cellSize;
-  let y = (boardSize - cellSize) - (row * cellSize);
+  let y = (boardSize - cellSize) - (row * cellSize);  // Adjust the Y position for the correct orientation
 
   return [x, y];
 }
 
-// Move player to new board position
+// Function to move the player and adjust the camera view
 function movePlayer(pos) {
   const [x, y] = getXY(pos);
+
+  // Move the player to the correct position
   player.style.left = `${x}px`;
   player.style.top = `${y}px`;
+
+  // Move the board with the player (effectively the "camera")
+  const board = document.getElementById("board");
+  board.scrollLeft = x - 256; // Centers the player horizontally in the view
+  board.scrollTop = y - 256;  // Centers the player vertically in the view
 }
 
-// Show the question modal
 function showQuestion() {
   fetch('/get_question')
     .then(res => res.json())
@@ -49,36 +48,35 @@ function showQuestion() {
     });
 }
 
-// Hide question modal
 function hideModal() {
   modal.style.display = "none";
 }
 
-// Handle answer submission
 function submitAnswer() {
   const answer = document.getElementById("answerInput").value;
+
   fetch("/submit_answer", {
     method: "POST",
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({answer: answer})
+    body: JSON.stringify({ answer: answer })
   })
   .then(res => res.json())
   .then(data => {
     hideModal();
     position = data.new_position;
-    movePlayer(position); // Correctly move the player
+    movePlayer(position);
     status.innerHTML = data.message;
 
     if (data.win) {
       alert("🎉 You reached 100 and won the game!");
     } else {
-      showQuestion(); // Automatically trigger next question
+      setTimeout(showQuestion, 500); // Automatically show next question
     }
   });
 }
 
-// Initial load
-document.addEventListener('DOMContentLoaded', () => {
+// On page load
+document.addEventListener("DOMContentLoaded", () => {
   movePlayer(position);
-  showQuestion(); // Show first question automatically
+  showQuestion();  // Automatically ask first question
 });
